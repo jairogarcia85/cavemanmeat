@@ -2,8 +2,8 @@ let bg = "img/game-background.png"
 let interval, frames = 0
 let cmr = "caveman/caveman-sprite.png"
 let cml = "caveman/caveman-sprite-left.png"
-
-let Bo =  'https://github.com/ironhack-labs/lab-canvas-flappybirds/blob/master/starter_code/images/obstacle_bottom.png?raw=true'
+let Bo =  'img/rock.png'
+let rick = 'rick-sanchez/rick-dicking.gif'
 
 //let To =  'https://github.com/ironhack-labs/lab-canvas-flappybirds/blob/master/starter_code/images/obstacle_top.png?raw=true'
 
@@ -96,24 +96,27 @@ window.onload = () => {
 
     isTouching(obstacle){
       return  (this.x < obstacle.x + obstacle.width) &&
-              (this.x + 15  > obstacle.x) &&
-              (this.y < obstacle.y + obstacle.height) &&
-              (this.y + 15 > obstacle.y)
+              (this.x + 75  > obstacle.x) 
+              //  &&
+              //  (this.y < obstacle.y + obstacle.height) &&
+              //  (this.y + 15 > obstacle.y)
     }
   }
 
    
   class Pipe {
-    constructor(y = 0, height = 50, type) {
+    constructor(y = canvas.height, height = 50, type) {
       this.x = canvas.width
       this.y = y
-      this.width = 20
+      this.width = 100
       this.height = height
       this.type = type
       this.img1 = new Image()
       //this.img2 = new Image()
       this.img1.src = Bo
       //this.img2.src = To
+      this.img1.onload = () => {this.draw ()
+      }
     }
     draw() {
       if (this.type) {
@@ -150,8 +153,14 @@ window.onload = () => {
 
   function gameOver() {
     clearInterval(interval)
-    ctx.fillText('Perdiste broooo', 50, 50)
+    //ctx.fillText('Perdiste broooo', 50, 50)
+    const img = new Image()
+    img.src = rick
+    img.onload = () => {
+    ctx.drawImage(img, 155, 65, 480, 269)
+    }
   }
+
 
   //listeners
   document.addEventListener('keydown', (e) => {
@@ -181,10 +190,12 @@ window.onload = () => {
   //helpers
 
   function generatePipes(){
-    let ventanita = 50
-    let randomHeight = Math.floor(Math.random() * ventanita) + 15
-    if (frames % 120 === 0) {
-      let obs1 = new Pipe(0, randomHeight, false)
+    //let alt = 20 
+    //let randomHeight = Math.floor(Math.random() * alt) + 10
+      let randomCreation = Math.floor(Math.random() * 900)
+    if (frames % randomCreation === 0) {
+      let obs1 = new Pipe(350, 50, true)
+      //let obs1 = new Pipe(350, randomHeight, true)
       //let obs2 = new Pipe(randomHeight + ventanita, canvas.height - (randomHeight - ventanita), true)
       obstacles.push(obs1)
       //obstacles.push(obs2)
