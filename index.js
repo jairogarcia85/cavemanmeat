@@ -6,11 +6,15 @@ let Bo =  'img/flame-line.png'
 let carne = 'img/meat-mod2.png'
 let lava = 'img/magma-sprite-400.png'
 let rick = 'rick-sanchez/rick-dicking.gif'
+let gameover = 'img/game-over-8-bit.png'
+let pterodactyl = 'img/pterodactyl-2-sprite.png'
+let contador = 0
 
 //let To =  'https://github.com/ironhack-labs/lab-canvas-flappybirds/blob/master/starter_code/images/obstacle_top.png?raw=true'
 
 let obstacles = []
 let prizes = []
+let kills = []
 
 
 window.onload = () => {
@@ -27,7 +31,7 @@ window.onload = () => {
       this.img.onload = () => {
         this.draw()
         this.audio = new Audio()
-        this.audio.src = './multimedia/jungle-beat.mp3'
+        this.audio.src = './multimedia/jungle-beat-cutted.mp3'
         this.audio.loop = true
       }
     }
@@ -49,6 +53,12 @@ window.onload = () => {
       this.sy = 0
       this.img.onload = () => {
         this.draw()
+        this.audio = new Audio()
+        this.audio.src = './multimedia/cartoon-fast-messy-eat.mp3'
+        this.audio.loop = false
+        this.audio1 = new Audio()
+        this.audio1.src = './multimedia/man-scream.mp3'
+        this.audio1.loop = false
       }
     }
     draw(){
@@ -113,6 +123,20 @@ window.onload = () => {
               &&
                (this.y < prize.y + prize.height) &&
                (this.y + 15 > prize.y)
+    }
+
+    cavemanKiller(enemy){
+      return  (this.x  < enemy.x  + 130) &&
+              (this.x + 50 > enemy.x) &&
+              (this.y < enemy.y + 30) &&
+              (this.y + 30 > enemy.y)
+    }
+
+    touchMagma(runlava){
+      return  (this.x  < runlava.x  + 10) &&
+              (this.x + 10 > runlava.x) &&
+              (this.y < runlava.y + 10) &&
+              (this.y + 10 > runlava.y)
     }
 
   }
@@ -201,28 +225,68 @@ window.onload = () => {
     } 
   }
 
+  class Bird{
+    constructor(img, x, y=50){
+      this.x = 810
+      this.y = y
+      this.img = new Image()
+      this.img.src = img
+      this.sx = 0
+      this.sy = 0
+      this.img.onload = () => {
+        this.draw()
+      }
+    }
+    
+    draw(){
+
+      //ctx.drawImage(this.img, this.x, this.y, 135, 135)
+      if (this.sx > 6090) this.sx = 0
+        ctx.drawImage(
+          this.img,
+          this.sx,
+          this.sy,
+          203,
+          209,
+          this.x,
+          this.y,
+          150,
+          150
+        )
+        this.sx += 203, 
+        this.x-=2
+    } 
+  }
 
   // Definiciones
   const board = new Board(bg)
   const caveman = new Caveman(cmr, 200, 100)
   const meat = new Meat(carne, 150, 150)
   const magma = new Magma(lava, 100, 100)
+  
 
   // flujo principal
   function update() {
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     board.draw()
-    meat.draw()
-    caveman.draw()
-    generatePipes()
     drawPipes()
     drawMeat()
-    generateMeat()
     magma.draw()
+    meat.draw()
+    caveman.draw()
+    killCollition()
+    checkCollition()
+    drawKiller()
+    generatePipes()
+    generateMeat()
+    generateBird()
+    //touchMagma()
     caveman.gravity()
     eatMeat()
-    checkCollition()
-    ctx.fillText(Math.round((frames/1000)* 10), 100, 30)
+    // killCollition()
+    // checkCollition()
+    //ctx.fillText(Math.round((frames/1000)* 10), 100, 30)
+    printScore()
     frames++
   }
 
@@ -234,15 +298,25 @@ window.onload = () => {
   function removeMeat(i){
     prizes.splice(i,1)
   }
+  
+  function printScore(){
+    ctx.font = "28px Arial"
+    ctx.fillStyle = "rgba(255, 34, 35, 0.4)";
+    ctx.fillRect(610, 65, 170, 50);
+    ctx.fillStyle = "white";
+    ctx.fillText('Carnes', 630, 100, 50,  50)
+    ctx.fillText(contador, 700, 100, 50,  50)
+  }
 
 
   function gameOver() {
     clearInterval(interval)
     //ctx.fillText('Perdiste broooo', 50, 50)
     const img = new Image()
-    img.src = rick
+    img.src = gameover
     img.onload = () => {
-    ctx.drawImage(img, 155, 65, 480, 269)
+    ctx.drawImage(img, 0, 0, 800, 400)
+    caveman.audio1.play()
     }
   }
 
@@ -252,7 +326,11 @@ window.onload = () => {
     e.preventDefault()
     switch (e.keyCode) {
       case 13:
-      //board.audio.play()
+      board.audio.play()
+        startGame()
+        break;
+      case 32:
+      board.audio.play()
         startGame()
         break;
       case 39: 
@@ -301,6 +379,16 @@ window.onload = () => {
     }
   }
 
+  function generateBird(){
+      let randomCreation = Math.floor(Math.random() * 3087)
+    if (!(frames % randomCreation === 0)) return 
+      let randomHeight = Math.floor(Math.random() * 200)
+      let obs3 = new Bird(pterodactyl, board.width, randomHeight)
+      kills.push(obs3)
+    
+  }
+
+
   function drawMeat() {
     prizes.forEach(prize => {
       prize.draw()
@@ -309,8 +397,24 @@ window.onload = () => {
   
   function eatMeat() {
     prizes.forEach((prize, i) => {
-      console.log(caveman.getPoints(prize))
-      if (caveman.getPoints(prize)) removeMeat(i)
+      if (caveman.getPoints(prize)) {
+        contador++
+        removeMeat(i)
+        caveman.audio.play()
+      }
+    })
+  }
+
+
+  function drawKiller() {
+    kills.forEach(kill => {
+      kill.draw()
+    })
+  }
+
+  function killCollition() {
+    kills.forEach(kill => {
+      if(caveman.cavemanKiller(kill)) gameOver()  
     })
   }
 
@@ -319,6 +423,9 @@ window.onload = () => {
       obstacle.draw()
     })
   }
+
+
+
 
   function checkCollition() {
     obstacles.forEach(obstacle => {
