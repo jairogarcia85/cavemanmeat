@@ -1,13 +1,14 @@
 let bg = "img/game-background.png"
 let interval, frames = 0
 let cmr = "caveman/caveman-sprite.png"
-let cml = "caveman/caveman-sprite-left.png"
+let cwr = "cavewoman/cavewoman-sprite.png"
 let Bo =  'img/flame-line.png'
 let carne = 'img/meat-mod2.png'
 let lava = 'img/magma-sprite-400.png'
 let rick = 'rick-sanchez/rick-dicking.gif'
 let gameover = 'img/game-over-8-bit.png'
 let pterodactyl = 'img/pterodactyl-2-sprite.png'
+let intro = 'img/caveman-meat-intro.png'
 let contador = 0
 
 //let To =  'https://github.com/ironhack-labs/lab-canvas-flappybirds/blob/master/starter_code/images/obstacle_top.png?raw=true'
@@ -15,6 +16,7 @@ let contador = 0
 let obstacles = []
 let prizes = []
 let kills = []
+let flames = []
 
 
 window.onload = () => {
@@ -133,14 +135,112 @@ window.onload = () => {
     }
 
     touchMagma(runlava){
-      return  (this.x  < runlava.x  + 10) &&
-              (this.x + 10 > runlava.x) &&
-              (this.y < runlava.y + 10) &&
-              (this.y + 10 > runlava.y)
+      return  (this.x  < runlava.x + 100) &&
+              (this.x + 50 > runlava.x) &&
+              (this.y < runlava.y + 230) &&
+              (this.y + 50 > runlava.y)
     }
 
   }
 
+
+  class Cavewoman{
+    constructor(img, x, y){
+      this.x = x
+      this.y = 255
+      this.img = new Image()
+      this.img.src = img
+      this.sx = 0
+      this.sy = 0
+      this.img.onload = () => {
+        this.draw()
+        this.audio = new Audio()
+        this.audio.src = './multimedia/cartoon-fast-messy-eat.mp3'
+        this.audio.loop = false
+        this.audio1 = new Audio()
+        this.audio1.src = './multimedia/man-scream.mp3'
+        this.audio1.loop = false
+      }
+    }
+    draw(){
+
+      //ctx.drawImage(this.img, this.x, this.y, 135, 135)
+      if (this.sx > 3600) this.sx = 0
+        ctx.drawImage(
+          this.img,
+          this.sx,
+          this.sy,
+          300,
+          386,
+          this.x,
+          this.y,
+          135,
+          135
+        )
+        this.sx += 301;
+    }
+
+    walkRight(){
+      if(this.x > 660){
+        this.x = 660
+      }
+      this.x += 25
+    }
+    walkLeft(){
+      if(this.x < 15){
+        this.x = -10
+      }
+      this.x -= 25
+    }
+    walkUp(){
+      if(this.y > 0){
+        this.y -= 25
+         }
+    }
+    walkDown(){
+      
+      if(this.y < 250){
+        this.y += 25
+         }
+    }
+
+    gravity() {
+      if(this.y < 250){
+        this.y++
+      }
+    }
+
+    isTouching(obstacle){
+      return  (this.x  < obstacle.x  + 50) &&
+              (this.x +85 > obstacle.x) 
+              &&
+              (this.y + 95 < obstacle.y + obstacle.height) &&
+              (this.y + 110 > obstacle.y)
+    }
+
+    getPoints(prize){
+      return  (this.x < prize.x + prize.width) &&
+              (this.x + 75  > prize.x) 
+              &&
+               (this.y < prize.y + prize.height) &&
+               (this.y + 15 > prize.y)
+    }
+
+    cavemanKiller(enemy){
+      return  (this.x  < enemy.x  + 130) &&
+              (this.x + 50 > enemy.x) &&
+              (this.y < enemy.y + 30) &&
+              (this.y + 30 > enemy.y)
+    }
+
+    touchMagma(runlava){
+      return  (this.x  < runlava.x + 100) &&
+              (this.x + 50 > runlava.x) &&
+              (this.y < runlava.y + 230) &&
+              (this.y + 50 > runlava.y)
+    }
+
+  }
    
   class Pipe {
     constructor(y = canvas.height, height = 50, type) {
@@ -250,8 +350,8 @@ window.onload = () => {
           209,
           this.x,
           this.y,
-          150,
-          150
+          130,
+          130
         )
         this.sx += 203, 
         this.x-=2
@@ -261,6 +361,7 @@ window.onload = () => {
   // Definiciones
   const board = new Board(bg)
   const caveman = new Caveman(cmr, 200, 100)
+  const cavewoman = new Cavewoman(cwr, 150, 100)
   const meat = new Meat(carne, 150, 150)
   const magma = new Magma(lava, 100, 100)
   
@@ -271,20 +372,23 @@ window.onload = () => {
     board.draw()
     drawPipes()
     drawMeat()
+    caveman.draw()
+    cavewoman.draw()
     magma.draw()
     meat.draw()
-    caveman.draw()
     killCollition()
+    killFlame()
     checkCollition()
     drawKiller()
+    drawFlame()
     generatePipes()
     generateMeat()
     generateBird()
     //touchMagma()
     caveman.gravity()
+    cavewoman.gravity()
     eatMeat()
-    // killCollition()
-    // checkCollition()
+
     //ctx.fillText(Math.round((frames/1000)* 10), 100, 30)
     printScore()
     frames++
@@ -304,7 +408,7 @@ window.onload = () => {
     ctx.fillStyle = "rgba(255, 34, 35, 0.4)";
     ctx.fillRect(610, 65, 170, 50);
     ctx.fillStyle = "white";
-    ctx.fillText('Carnes', 630, 100, 50,  50)
+    ctx.fillText('Puntos', 630, 100, 50,  50)
     ctx.fillText(contador, 700, 100, 50,  50)
   }
 
@@ -344,6 +448,18 @@ window.onload = () => {
       break;
       case 40: 
       caveman.walkDown()
+      break;
+      case 68: 
+      cavewoman.walkRight()
+      break;
+      case 65: 
+      cavewoman.walkLeft()
+      break;
+      case 87: 
+      cavewoman.walkUp()
+      break;
+      case 83: 
+      cavewoman.walkDown()
       break;
       default:
         break;
@@ -397,7 +513,7 @@ window.onload = () => {
   
   function eatMeat() {
     prizes.forEach((prize, i) => {
-      if (caveman.getPoints(prize)) {
+      if (caveman.getPoints(prize)||cavewoman.getPoints(prize)) {
         contador++
         removeMeat(i)
         caveman.audio.play()
@@ -414,8 +530,18 @@ window.onload = () => {
 
   function killCollition() {
     kills.forEach(kill => {
-      if(caveman.cavemanKiller(kill)) gameOver()  
+      if(caveman.cavemanKiller(kill)||cavewoman.cavemanKiller(kill)) gameOver()  
     })
+  }
+
+  function drawFlame() {
+    flames.forEach(flare => {
+      flare.draw()
+    })
+  }
+
+  function killFlame() {
+      if(caveman.touchMagma(magma)||cavewoman.touchMagma(magma)) gameOver()  
   }
 
   function drawPipes() {
@@ -424,12 +550,20 @@ window.onload = () => {
     })
   }
 
-
-
-
   function checkCollition() {
     obstacles.forEach(obstacle => {
-      if (caveman.isTouching(obstacle)) gameOver()
+      if (caveman.isTouching(obstacle)||cavewoman.isTouching(obstacle)) gameOver()
     })
   }
+
+  //draw image before game starts
+  const img = new Image()
+    img.src = intro
+    img.onload = () => {
+      ctx.drawImage(img, 0, 0, 800, 400)
+      ctx.font = "50px Arial"
+      ctx.fillStyle = "white";
+      ctx.fillText('Presiona ENTER para empezar', 220, 360, 420,  420)
+    }
+
 }
