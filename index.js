@@ -157,9 +157,9 @@ window.onload = () => {
         this.audio = new Audio()
         this.audio.src = './multimedia/cartoon-fast-messy-eat.mp3'
         this.audio.loop = false
-        this.audio1 = new Audio()
-        this.audio1.src = './multimedia/man-scream.mp3'
-        this.audio1.loop = false
+        this.audio2 = new Audio()
+        this.audio2.src = './multimedia/girl-scream.mp3'
+        this.audio2.loop = false
       }
     }
     draw(){
@@ -421,6 +421,7 @@ window.onload = () => {
     img.onload = () => {
     ctx.drawImage(img, 0, 0, 800, 400)
     caveman.audio1.play()
+    cavewoman.audio2.play()
     }
   }
 
